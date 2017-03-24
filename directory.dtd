@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!ELEMENT directory (person | error)*>
+<!ELEMENT person (firstnames, surname, telephone)>
+<!ATTLIST person
+	pid ID #REQUIRED
+	loc CDATA #REQUIRED
+>
+<!ELEMENT error (#PCDATA)>
+<!ELEMENT firstnames (#PCDATA)>
+<!ELEMENT surname (#PCDATA)>
+<!ELEMENT telephone (#PCDATA)>
