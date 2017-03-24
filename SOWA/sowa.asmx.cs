@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using System.Xml;
 
 namespace SOWA
 {
@@ -16,7 +17,7 @@ namespace SOWA
     [System.ComponentModel.ToolboxItem(false)]
     // To allow this Web Service to be called from script, using ASP.NET AJAX, uncomment the following line. 
     // [System.Web.Script.Services.ScriptService]
-    public class WebServices : System.Web.Services.WebService
+    public class sowa : System.Web.Services.WebService
     {
 
         //[WebMethod]
@@ -25,9 +26,9 @@ namespace SOWA
         //}
 
         [WebMethod]
-        public bool createReading(int sensorID, int idrooms, string SensorValue, string notification)
+        public bool createSensorReadingAndLog(int sensorID, int idrooms, string SensorValue)
         {
-            return dbstuff.createReading(sensorID, idrooms, SensorValue, notification);
+            return dbstuff.createReading(sensorID, idrooms, SensorValue);
         }
 
         //[WebMethod]
@@ -52,6 +53,12 @@ namespace SOWA
         public bool toogleSystem(int homeID, bool on)
         {
             return dbstuff.toggleAlarmState(homeID, on);
+        }
+
+        [WebMethod]
+        public XmlDocument getSensorLogsTime(int idroom, DateTime start, DateTime end)
+        {
+            return dbstuff.getSensorLogsRoom(idroom, start, end);
         }
     }
 }

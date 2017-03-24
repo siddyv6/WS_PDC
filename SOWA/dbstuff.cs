@@ -1,8 +1,10 @@
 ﻿using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Web;
+using System.Xml;
 
 namespace SOWA
 {
@@ -30,7 +32,7 @@ namespace SOWA
             MySqlConnection con = getDBConection();
 
             MySqlCommand cmd = new MySqlCommand(@"
-INSERT INTO logs (
+INSERT INTO homelog (
 	idhome,
 	timestamp,
     state
@@ -116,31 +118,28 @@ INSERT INTO logs (
         //            return success;
         //        }
 
-        public static bool createReading(int sensorID, int idrooms, string SensorValue, string notification)
+        public static bool createReading(int sensorID, int idrooms, string SensorValue)
         {
             bool success = false;
 
             MySqlConnection con = getDBConection();
 
             MySqlCommand cmd = new MySqlCommand(@"
-INSERT INTO events (
+INSERT INTO sensorlog (
     idsensor,
     idrooms,
-    notification,
     timestamp,
     sensorState
 ) VALUES (
 
     @idsensor,
     @idrooms,
-    @notification,
     @timestamp,
     @sensorState
 )", con);
 
             MySqlParameter paramSensorID = new MySqlParameter("@idsensor", MySqlDbType.Int32);
             MySqlParameter paramRoomID = new MySqlParameter("@idrooms", MySqlDbType.Int32);
-            MySqlParameter paramNotify = new MySqlParameter("@notification", MySqlDbType.VarChar);
             MySqlParameter paramTimestamp = new MySqlParameter("@timestamp", MySqlDbType.DateTime);
 
             MySqlParameter paramSensorValue = new MySqlParameter("@sensorState", MySqlDbType.VarChar);
@@ -148,13 +147,11 @@ INSERT INTO events (
             paramRoomID.Value = idrooms;
             paramSensorID.Value = sensorID;
             paramTimestamp.Value = DateTime.Now;
-            paramNotify.Value = notification;
             paramSensorValue.Value = SensorValue;
 
             cmd.Parameters.Add(paramRoomID);
             cmd.Parameters.Add(paramSensorID);
             cmd.Parameters.Add(paramTimestamp);
-            cmd.Parameters.Add(paramNotify);
 
             cmd.Parameters.Add(paramSensorValue);
 
@@ -293,5 +290,56 @@ WHERE idhome = @home
 
             return state;
         }
+
+        public static XmlDocument getSensorLogsRoom(int idrooms, DateTime start, DateTime end)
+        {
+            MySqlConnection con = getDBConection();
+
+            MySqlCommand cmd = new MySqlCommand(@"
+SELECT * FROM sensorlog WHERE idrooms = @idroom
+    AND timestamp BETWEEN @start AND @end
+", con);
+
+            MySqlParameter paramRoomID = new MySqlParameter("@idroom", MySqlDbType.Int32);
+            MySqlParameter paramStartTime = new MySqlParameter("@start", MySqlDbType.DateTime);
+            MySqlParameter paramEndTime = new MySqlParameter("@end", MySqlDbType.DateTime);
+
+            paramRoomID.Value = idrooms;
+            paramStartTime.Value = start;
+            paramEndTime.Value = end;
+
+            cmd.Parameters.Add(paramRoomID);
+            cmd.Parameters.Add(paramStartTime);
+            cmd.Parameters.Add(paramEndTime);
+
+            XmlDocument xmlDom = new XmlDocument();
+            xmlDom.AppendChild(xmlDom.CreateElement("sensorlogs"));
+
+            try
+            {
+                con.Open();
+                cmd.ExecuteNonQuery();
+
+                MySqlDataAdapter dataAdptr = new MySqlDataAdapter();
+                dataAdptr.SelectCommand = cmd;
+                DataSet ds = new DataSet("sensorlogs");
+                dataAdptr.Fill(ds, "sensorlogs");
+
+                xmlDom.LoadXml(ds.GetXml());
+
+            }
+            catch (MySqlException MySqlE)
+            {
+                throw MySqlE;
+            }
+            finally
+            {
+                con.Close();
+            }
+
+
+            return xmlDom;
+        }
+
     }
 }
