@@ -217,7 +217,7 @@ WHERE idhome = @id
             paramState.Value = state;
             paramID.Value = homeID;
 
-            cmd.Parameters.Add(paramState);
+            cmd.Parameters.Add(paramState);     
             cmd.Parameters.Add(paramID);
 
             try
